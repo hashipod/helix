@@ -947,8 +947,10 @@ pub fn scroll(cx: &mut Context, offset: usize, direction: Direction) {
     let last_line = view.last_line(doc);
 
     // clamp into viewport
-    let line = cursor
-        .row
+    let line = match direction {
+        Forward => cursor.row + offset,
+        Backward => cursor.row - offset,
+    }
         .max(view.offset.row + scrolloff)
         .min(last_line.saturating_sub(scrolloff));
 
