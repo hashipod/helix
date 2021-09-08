@@ -538,6 +538,7 @@ impl Default for Keymaps {
             // "C-s" => save_selection,
 
             "space" => { "Space"
+                "j" => write,
                 "f" => file_picker,
                 "b" => buffer_picker,
                 "s" => symbol_picker,

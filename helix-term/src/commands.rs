@@ -224,6 +224,7 @@ impl Command {
         insert_mode, "Insert before selection",
         append_mode, "Insert after selection (append)",
         command_mode, "Enter command mode",
+        write, "write file",
         file_picker, "Open file picker",
         code_action, "Perform code action",
         buffer_picker, "Open buffer picker",
@@ -951,8 +952,8 @@ pub fn scroll(cx: &mut Context, offset: usize, direction: Direction) {
         Forward => cursor.row + offset,
         Backward => cursor.row - offset,
     }
-        .max(view.offset.row + scrolloff)
-        .min(last_line.saturating_sub(scrolloff));
+    .max(view.offset.row + scrolloff)
+    .min(last_line.saturating_sub(scrolloff));
 
     let head = pos_at_coords(text, Position::new(line, cursor.col), true); // this func will properly truncate to line end
 
@@ -2414,6 +2415,31 @@ fn command_mode(cx: &mut Context) {
     });
 
     cx.push_layer(Box::new(prompt));
+}
+
+fn write(cx: &mut Context) {
+    let jobs = &mut cx.jobs;
+    let (_, doc) = current!(cx.editor);
+
+    if doc.path().is_none() {
+        log::error!("doc path is none, not write.");
+        return;
+    }
+    let fmt = doc.auto_format().map(|fmt| {
+        let shared = fmt.shared();
+        let callback = make_format_callback(
+            doc.id(),
+            doc.version(),
+            Modified::SetUnmodified,
+            shared.clone(),
+        );
+        jobs.callback(callback);
+        shared
+    });
+    let future = doc.format_and_save(fmt);
+    cx.jobs.add(Job::new(future).wait_before_exiting());
+
+    log::debug!("write file");
 }
 
 fn file_picker(cx: &mut Context) {
