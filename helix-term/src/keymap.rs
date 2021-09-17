@@ -389,6 +389,9 @@ impl Default for Keymaps {
             "k" | "up" => move_line_up,
             "l" | "right" => move_char_right,
 
+            "H" => goto_first_nonwhitespace,
+            "L" => goto_line_end,
+
             "t" => find_till_char,
             "f" => find_next_char,
             "T" => till_prev_char,
